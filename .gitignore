@@ -1,0 +1,8 @@
+# Arquivos Python
+__pycache__/
+*.py[cod]
+
+# Ambiente virtual
+venv/
+
+\Leitor_Gabarito\leitor_projeto\venv

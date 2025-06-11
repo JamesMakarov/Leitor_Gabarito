@@ -1,0 +1,53 @@
+{% extends "accounts/base.html" %}
+{% block title %}Meu Perfil{% endblock %}
+{% block content %}
+
+  <h2>Perfil</h2>
+
+  {% if messages %}
+    <ul>
+    {% for message in messages %}
+      <li>{{ message }}</li>
+    {% endfor %}
+    </ul>
+  {% endif %}
+
+  {% if mostrar_formulario %}
+    <form method="post" enctype="multipart/form-data">
+      {% csrf_token %}
+      {{ form.as_p }}
+      <button type="submit">Salvar</button>
+    </form>
+
+    {% if form.errors %}
+      <ul style="color: red;">
+        {% for field in form %}
+          {% for error in field.errors %}
+            <li>{{ field.label }}: {{ error }}</li>
+          {% endfor %}
+        {% endfor %}
+      </ul>
+    {% endif %}
+
+  {% else %}
+    <p><strong>Nome completo:</strong> {{ perfil.nome_completo }}</p>
+    <p><strong>Bio:</strong> {{ perfil.bio }}</p>
+    <p><strong>Data de nascimento:</strong>
+  {% if perfil.nascimento %}
+    {{ perfil.nascimento|date:"d/m/Y" }}
+  {% else %}
+    Não informado
+  {% endif %}
+</p>
+
+
+    <p><strong>Foto de perfil:</strong></p>
+        {% if perfil.foto %}
+        <img src="{{ perfil.foto.url }}" alt="Foto de perfil" width="150">
+        {% else %}
+        <p>Sem foto enviada.</p>
+        {% endif %}
+
+  {% endif %}
+
+{% endblock %}

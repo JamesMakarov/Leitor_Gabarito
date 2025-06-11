@@ -42,7 +42,21 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     'App',
+    'rest_framework.authtoken',
+    'djoser',
 ]
+
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.TokenAuthentication',
+    ]
+}
+
+AUTH_USER_MODEL = 'auth.User'
+
+DJOSER = {
+    'LOGIN_FIELD': 'username',
+}
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -129,3 +143,4 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 MEDIA_URL = "/media/"
 MEDIA_ROOT = os.path.join(BASE_DIR, "uploads")
+

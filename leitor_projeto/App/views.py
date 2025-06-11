@@ -3,6 +3,16 @@ from django.http import JsonResponse
 import ctypes
 from pathlib import Path
 import os
+from django.shortcuts import redirect
+from django.contrib.auth import authenticate, login, logout
+from django.contrib import messages
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth import get_user_model
+from .models import Perfil
+from .forms import PerfilForm
+
+
+
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -30,6 +40,8 @@ upload_dir = os.path.join(BASE_DIR, 'uploads')
 if not os.path.exists(upload_dir):
     os.makedirs(upload_dir, exist_ok=True)
 
+
+@login_required
 def iniciar_leitura(request):
     if request.method == "POST" and request.FILES.get("imagem"):
         imagem = request.FILES["imagem"]
@@ -53,11 +65,6 @@ def iniciar_leitura(request):
         leitura = resultado.leitura
         leitura_decodificada = leitura.decode("utf-8") if leitura else ""
 
-        print(resultado.erro)
-        print(resultado.id_prova)
-        print(resultado.id_participante)
-        print(leitura_decodificada)
-
         return JsonResponse({
             "erro": resultado.erro,
             "id_prova": resultado.id_prova,
@@ -66,3 +73,72 @@ def iniciar_leitura(request):
         })
 
     return render(request, "upload.html")
+
+
+
+User = get_user_model()
+
+def login_view(request):
+    if request.method == "POST":
+        email = request.POST['email']
+        password = request.POST['password']
+        user = authenticate(request, username=email, password=password)
+        if user:
+            login(request, user)
+            return redirect('home')
+        else:
+            messages.error(request, "Credenciais inválidas.")
+    return render(request, 'accounts/login.html')
+
+def register_view(request):
+    if request.method == "POST":
+        email = request.POST['email']
+        password = request.POST['password']
+        if User.objects.filter(email=email).exists():
+            messages.error(request, "Este email já está em uso.")
+        else:
+            user = User.objects.create_user(
+            username=email,
+            email=email,
+            password=password
+            )
+            Perfil.objects.create(usuario=user) 
+            login(request, user)
+            return redirect('home')
+    return render(request, 'accounts/register.html')
+
+
+def logout_view(request):
+    logout(request)
+    return redirect('login')
+
+@login_required
+def home_view(request):
+    return render(request, 'accounts/home.html')
+
+@login_required
+def perfil_view(request):
+    perfil = request.user.perfil
+
+    if request.method == 'POST':
+        form = PerfilForm(request.POST, request.FILES, instance=perfil)
+        if form.is_valid():
+            form.save()
+            return redirect('perfil')  # só redireciona se salvou
+    else:
+        form = PerfilForm(instance=perfil)
+
+    # perfil está preenchido se nome_completo e bio foram salvos
+    perfil_preenchido = all([
+    perfil.nome_completo,
+    perfil.bio,
+    perfil.nascimento,
+    perfil.foto
+])
+
+    context = {
+        'form': form,
+        'perfil': perfil,
+        'mostrar_formulario': not perfil_preenchido,
+    }
+    return render(request, 'accounts/perfil.html', context)

@@ -23,7 +23,8 @@ class Reading(ctypes.Structure):
     ]
 
 if leitor_lib:
-    leitor_lib.read_image_path.restype = ctypes.POINTER(Reading)
+    leitor_lib.read_image_path.restype = Reading
+    leitor_lib.read_image_path.argtypes = [ctypes.c_char_p]
 
 upload_dir = os.path.join(BASE_DIR, 'uploads')
 if not os.path.exists(upload_dir):
@@ -32,29 +33,36 @@ if not os.path.exists(upload_dir):
 def iniciar_leitura(request):
     if request.method == "POST" and request.FILES.get("imagem"):
         imagem = request.FILES["imagem"]
-        path_imagem = os.path.join(upload_dir, request.FILES["imagem"].name)    
+        path_imagem = os.path.join(upload_dir, imagem.name)
 
         print(f"Imagem recebida: {imagem.name}")
 
         with open(path_imagem, "wb+") as destino:
             for chunk in imagem.chunks():
                 destino.write(chunk)
+
         if not leitor_lib:
             return JsonResponse({"erro": -1, "mensagem": "Biblioteca não carregada"})
+
         if not os.path.exists(path_imagem):
             return JsonResponse({"erro": -2, "mensagem": "Arquivo não encontrado"})
 
-        resultado_ptr = leitor_lib.read_image_path(path_imagem.encode("utf-8"))
+        resultado = leitor_lib.read_image_path(path_imagem.encode("utf-8"))
 
-        if resultado_ptr:
-            resultado = resultado_ptr.contents
-            return JsonResponse({
-                "erro": resultado.erro,
-                "id_prova": resultado.id_prova,
-                "id_participante": resultado.id_participante,
-                "leitura": resultado.leitura.decode("utf-8")
-            })
-        else:
-            return JsonResponse({"erro": -3, "mensagem": "Erro ao processar a imagem"})
+        # Segurança: checar se leitura é válida antes de decodificar
+        leitura = resultado.leitura
+        leitura_decodificada = leitura.decode("utf-8") if leitura else ""
+
+        print(resultado.erro)
+        print(resultado.id_prova)
+        print(resultado.id_participante)
+        print(leitura_decodificada)
+
+        return JsonResponse({
+            "erro": resultado.erro,
+            "id_prova": resultado.id_prova,
+            "id_participante": resultado.id_participante,
+            "leitura": leitura_decodificada
+        })
 
     return render(request, "upload.html")

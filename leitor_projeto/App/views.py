@@ -2,17 +2,18 @@ from django.shortcuts import render
 from django.http import JsonResponse
 import ctypes
 from pathlib import Path
-import os
+import os, io
 from django.shortcuts import redirect
 from django.contrib.auth import authenticate, login, logout
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import get_user_model
 from .models import Perfil
-from .forms import PerfilForm
-
-
-
+from .forms import PerfilForm, DadosImagemForm
+from tempfile import NamedTemporaryFile
+from .models import ImagemUpload
+from django.core.files import File
+from PIL import Image
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -43,38 +44,53 @@ if not os.path.exists(upload_dir):
 
 @login_required
 def iniciar_leitura(request):
-    if request.method == "POST" and request.FILES.get("imagem"):
-        imagem = request.FILES["imagem"]
-        path_imagem = os.path.join(upload_dir, imagem.name)
+    if request.method == "POST":
+        if request.FILES.get("imagem"):
+            imagem_upload = request.FILES["imagem"]
+            if not leitor_lib:
+                return JsonResponse({"erro": -1, "mensagem": "Biblioteca não carregada"})
+            try:
+                imagem = Image.open(imagem_upload)
+                buffer = io.BytesIO()
+                imagem.save(buffer, format="PNG")
+                buffer.seek(0)
 
-        print(f"Imagem recebida: {imagem.name}")
+                with NamedTemporaryFile(suffix=".png", delete=False) as tmp:
+                    tmp.write(buffer.read())
+                    tmp_path = tmp.name
 
-        with open(path_imagem, "wb+") as destino:
-            for chunk in imagem.chunks():
-                destino.write(chunk)
+                resultado = leitor_lib.read_image_path(tmp_path.encode("utf-8"))
 
-        if not leitor_lib:
-            return JsonResponse({"erro": -1, "mensagem": "Biblioteca não carregada"})
+                leitura = resultado.leitura
+                leitura_decodificada = leitura.decode("utf-8") if leitura else ""
 
-        if not os.path.exists(path_imagem):
-            return JsonResponse({"erro": -2, "mensagem": "Arquivo não encontrado"})
+                os.remove(tmp_path)
 
-        resultado = leitor_lib.read_image_path(path_imagem.encode("utf-8"))
+                form = DadosImagemForm(initial={
+                    'id_prova': resultado.id_prova,
+                    'id_participante': resultado.id_participante,
+                    'leitura': leitura_decodificada,
+                })
 
-        # Segurança: checar se leitura é válida antes de decodificar
-        leitura = resultado.leitura
-        leitura_decodificada = leitura.decode("utf-8") if leitura else ""
+                return render(request, 'revisar_leitura.html', {'form': form})
 
-        return JsonResponse({
-            "erro": resultado.erro,
-            "id_prova": resultado.id_prova,
-            "id_participante": resultado.id_participante,
-            "leitura": leitura_decodificada
-        })
+            except Exception as e:
+                if 'tmp_path' in locals() and os.path.exists(tmp_path):
+                    os.remove(tmp_path)
+                return JsonResponse({"erro": -99, "mensagem": f"Erro inesperado: {str(e)}"})
 
+        else:
+            form = DadosImagemForm(request.POST)  
+            if form.is_valid():
+                leitura = form.save(commit=False)
+                leitura.usuario = request.user
+                leitura.save()
+                messages.success(request, "Leitura confirmada e salva com sucesso!")
+                return redirect('home')
+            else:
+                messages.error(request, "Erro ao salvar. Verifique os campos.")
+                return render(request, 'revisar_leitura.html', {'form': form})
     return render(request, "upload.html")
-
-
 
 User = get_user_model()
 
@@ -142,3 +158,9 @@ def perfil_view(request):
         'mostrar_formulario': not perfil_preenchido,
     }
     return render(request, 'accounts/perfil.html', context)
+
+
+@login_required
+def galeria_usuario(request):
+    imagens = ImagemUpload.objects.filter(usuario=request.user).order_by('-data_envio')
+    return render(request, 'galeria.html', {'imagens': imagens})

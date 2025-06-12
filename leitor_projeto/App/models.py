@@ -12,3 +12,16 @@ class Perfil(models.Model):
 
     def __str__(self):
         return f"Perfil de {self.usuario.email}"
+
+class ImagemUpload(models.Model):
+    usuario = models.ForeignKey(User, on_delete=models.CASCADE)
+    nome_arquivo = models.CharField(max_length=255)
+    conteudo = models.BinaryField()
+    criado_em = models.DateTimeField(auto_now_add=True)
+
+class DadosImagem(models.Model):
+    usuario = models.ForeignKey(User, on_delete=models.CASCADE)
+    id_prova = models.IntegerField()
+    id_participante = models.IntegerField()
+    leitura = models.TextField()
+    criado_em = models.DateTimeField(auto_now_add=True)

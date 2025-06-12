@@ -1,0 +1,43 @@
+<!-- templates/galeria.html -->
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Minhas Imagens</title>
+    <style>
+        body { font-family: Arial, sans-serif; }
+        .galeria {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 15px;
+            padding: 20px;
+        }
+        .imagem-container {
+            border: 1px solid #ccc;
+            padding: 10px;
+            text-align: center;
+        }
+        .imagem-container img {
+            max-width: 100%;
+            height: auto;
+        }
+        .data {
+            font-size: 0.9em;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <h1>Minhas Imagens</h1>
+    <div class="galeria">
+        {% for imagem in imagens %}
+            <div class="imagem-container">
+                <img src="{{ imagem.imagem.url }}" alt="Imagem do usuário">
+                <div class="data">{{ imagem.data_envio|date:"d/m/Y H:i" }}</div>
+            </div>
+        {% empty %}
+            <p>Você ainda não enviou nenhuma imagem.</p>
+        {% endfor %}
+    </div>
+</body>
+</html>

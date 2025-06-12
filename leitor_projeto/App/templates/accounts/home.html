@@ -3,4 +3,9 @@
 {% block content %}
     <h2>Bem-vindo, {{ user.email }}</h2>
     <p>Você está logado!</p>
+    <a href = "{% url 'upload'%}">Uploads</a>
+    <a href = "{% url 'perfil'%}">Perfil</a>
+    <a href = "{% url 'galeria'%}">Galeria</a>
+    <a href = "{% url 'dados'%}">Dados</a>
+
 {% endblock %}

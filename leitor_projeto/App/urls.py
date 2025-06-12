@@ -1,5 +1,6 @@
 from django.urls import path
-from .views import iniciar_leitura, login_view, register_view, logout_view, home_view, perfil_view, galeria_usuario, imagem_binaria, dados_leituras, editar_dado, deletar_dado
+from .views import iniciar_leitura, login_view, register_view, logout_view, home_view, perfil_view
+from .views import galeria_usuario, imagem_binaria, dados_leituras, editar_dado, deletar_dado
 from django.conf import settings
 from django.conf.urls.static import static
 

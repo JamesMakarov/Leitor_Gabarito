@@ -120,7 +120,7 @@ def register_view(request):
             email=email,
             password=password
             )
-            Perfil.objects.create(usuario=user) 
+            Perfil.objects.create(user=user) 
             login(request, user)
             return redirect('home')
     return render(request, 'accounts/register.html')

@@ -1,0 +1,14 @@
+{% extends "accounts/base.html" %}
+{% block title %}Deletar Dado{% endblock %}
+{% block content %}
+
+<h2>Confirmação</h2>
+<p>Tem certeza que deseja deletar este dado?</p>
+
+<form method="post">
+  {% csrf_token %}
+  <button type="submit">Sim, deletar</button>
+  <a href="{% url 'dados_leituras' %}">Cancelar</a>
+</form>
+
+{% endblock %}

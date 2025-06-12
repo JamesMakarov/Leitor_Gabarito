@@ -21,6 +21,7 @@ class ImagemUpload(models.Model):
 
 class DadosImagem(models.Model):
     usuario = models.ForeignKey(User, on_delete=models.CASCADE)
+    imagem = models.OneToOneField('ImagemUpload', on_delete=models.CASCADE)  # ⬅ aqui está o segredo
     id_prova = models.IntegerField()
     id_participante = models.IntegerField()
     leitura = models.TextField()

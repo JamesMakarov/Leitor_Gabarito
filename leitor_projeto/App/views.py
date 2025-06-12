@@ -1,4 +1,4 @@
-from django.shortcuts import render
+from django.shortcuts import get_object_or_404, render
 from django.http import JsonResponse
 import ctypes
 from pathlib import Path
@@ -14,41 +14,19 @@ from tempfile import NamedTemporaryFile
 from .models import ImagemUpload
 from django.core.files import File
 from PIL import Image
-
-BASE_DIR = Path(__file__).resolve().parent.parent
-
-LIBRARY_PATH = BASE_DIR / "App" / "libs" / "biblioteca" / "libleitor.so"
-
-try:
-    leitor_lib = ctypes.CDLL(str(LIBRARY_PATH))
-except OSError as e:
-    print(f"Erro ao carregar a biblioteca: {e}")
-    leitor_lib = None
-
-class Reading(ctypes.Structure):
-    _fields_ = [
-        ("erro", ctypes.c_int),
-        ("id_prova", ctypes.c_int),
-        ("id_participante", ctypes.c_int),
-        ("leitura", ctypes.c_char_p)
-    ]
-
-if leitor_lib:
-    leitor_lib.read_image_path.restype = Reading
-    leitor_lib.read_image_path.argtypes = [ctypes.c_char_p]
-
-upload_dir = os.path.join(BASE_DIR, 'uploads')
-if not os.path.exists(upload_dir):
-    os.makedirs(upload_dir, exist_ok=True)
-
+from .biblioteca import leitor_lib
+from django.http import HttpResponse, Http404
+from .models import ImagemUpload, DadosImagem
 
 @login_required
 def iniciar_leitura(request):
     if request.method == "POST":
         if request.FILES.get("imagem"):
             imagem_upload = request.FILES["imagem"]
+
             if not leitor_lib:
                 return JsonResponse({"erro": -1, "mensagem": "Biblioteca não carregada"})
+
             try:
                 imagem = Image.open(imagem_upload)
                 buffer = io.BytesIO()
@@ -64,6 +42,16 @@ def iniciar_leitura(request):
                 leitura = resultado.leitura
                 leitura_decodificada = leitura.decode("utf-8") if leitura else ""
 
+                # ⚠️ Salvar a imagem original no banco
+                imagem_upload.seek(0)
+                imagem_binaria = imagem_upload.read()
+                imagem_obj = ImagemUpload.objects.create(
+                    usuario=request.user,
+                    nome_arquivo=imagem_upload.name,
+                    conteudo=imagem_binaria
+                )
+
+                # Apagar imagem temporária
                 os.remove(tmp_path)
 
                 form = DadosImagemForm(initial={
@@ -72,7 +60,10 @@ def iniciar_leitura(request):
                     'leitura': leitura_decodificada,
                 })
 
-                return render(request, 'revisar_leitura.html', {'form': form})
+                return render(request, 'revisar_leitura.html', {
+                    'form': form,
+                    'imagem_id': imagem_obj.id  # Passa o ID para o template
+                })
 
             except Exception as e:
                 if 'tmp_path' in locals() and os.path.exists(tmp_path):
@@ -80,17 +71,28 @@ def iniciar_leitura(request):
                 return JsonResponse({"erro": -99, "mensagem": f"Erro inesperado: {str(e)}"})
 
         else:
-            form = DadosImagemForm(request.POST)  
+            # Submissão do formulário de revisão
+            imagem_id = request.POST.get('imagem_id')
+            imagem = get_object_or_404(ImagemUpload, pk=imagem_id, usuario=request.user)
+
+            form = DadosImagemForm(request.POST)
             if form.is_valid():
                 leitura = form.save(commit=False)
                 leitura.usuario = request.user
+                leitura.imagem = imagem  # ✅ associa a imagem corretamente
                 leitura.save()
                 messages.success(request, "Leitura confirmada e salva com sucesso!")
                 return redirect('home')
             else:
                 messages.error(request, "Erro ao salvar. Verifique os campos.")
-                return render(request, 'revisar_leitura.html', {'form': form})
+                return render(request, 'revisar_leitura.html', {
+                    'form': form,
+                    'imagem_id': imagem_id  # reenviar no erro para manter estado
+                })
+
     return render(request, "upload.html")
+
+
 
 User = get_user_model()
 
@@ -123,7 +125,7 @@ def register_view(request):
             return redirect('home')
     return render(request, 'accounts/register.html')
 
-
+@login_required
 def logout_view(request):
     logout(request)
     return redirect('login')
@@ -159,8 +161,49 @@ def perfil_view(request):
     }
     return render(request, 'accounts/perfil.html', context)
 
+@login_required
+def imagem_binaria(request, imagem_id):
+    try:
+        imagem = ImagemUpload.objects.get(pk=imagem_id, usuario=request.user)
+        return HttpResponse(imagem.conteudo, content_type="image/png")  # ou "image/jpeg" conforme necessário
+    except ImagemUpload.DoesNotExist:
+        raise Http404("Imagem não encontrada")
 
 @login_required
 def galeria_usuario(request):
-    imagens = ImagemUpload.objects.filter(usuario=request.user).order_by('-data_envio')
+    imagens = ImagemUpload.objects.filter(usuario=request.user).order_by('-criado_em')
     return render(request, 'galeria.html', {'imagens': imagens})
+
+@login_required
+def dados_leituras(request):
+    dados = DadosImagem.objects.filter(usuario=request.user).order_by('-criado_em')
+    return render(request, 'dados.html', {'dados':dados})
+
+@login_required
+def editar_dado(request, dado_id):
+    dado = get_object_or_404(DadosImagem, pk=dado_id, usuario=request.user)
+
+    if request.method == 'POST':
+        form = DadosImagemForm(request.POST, instance=dado)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Dados atualizados com sucesso!")
+            return redirect('dados_leituras')
+    else:
+        form = DadosImagemForm(instance=dado)
+
+    return render(request, 'editar_dado.html', {'form': form})
+
+@login_required
+def deletar_dado(request, dado_id):
+    dado = get_object_or_404(DadosImagem, pk=dado_id, usuario=request.user)
+
+    if request.method == 'POST':
+        if dado.imagem:
+            dado.imagem.delete()  # deleta a imagem associada primeiro
+        dado.delete()             # depois deleta o dado
+        messages.success(request, "Dado e imagem deletados com sucesso.")
+        return redirect('dados_leituras')
+
+    return render(request, 'confirmar_delete.html', {'dado': dado})
+

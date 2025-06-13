@@ -1,15 +1,16 @@
 {% extends "accounts/base.html" %}
 {% block title %}Editar Dado{% endblock %}
 {% block content %}
+<div class="container" style="max-width: 600px;">
+  <h2 class="mb-4">Editar Gabarito</h2>
 
-<h2>Editar Gabarito</h2>
-
-<form method="post">
-  {% csrf_token %}
-  {{ form.as_p }}
-  <button type="submit">Salvar alterações</button>
-</form>
-
-<a href="{% url 'dados_leituras' %}">← Voltar</a>
-
+  <form method="post" class="row g-3">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <div class="col-12">
+      <button type="submit" class="btn btn-success">Salvar alterações</button>
+      <a href="{% url 'dados_leituras' %}" class="btn btn-secondary">← Voltar</a>
+    </div>
+  </form>
+</div>
 {% endblock %}

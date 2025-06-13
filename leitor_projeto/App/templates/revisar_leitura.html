@@ -1,11 +1,16 @@
 {% extends "accounts/base.html" %}
 {% block title %}Revisar respostas e informações{% endblock %}
 {% block content %}
-<form method="post">
-  {% csrf_token %}
-  {{ form.as_p }}
-  <input type="hidden" name="imagem_id" value="{{ imagem_id }}">
-  <button type="submit">Confirmar e Salvar</button>
-</form>
+<div class="container">
+  <h2 class="mb-4">Revisar respostas e informações</h2>
 
+  <form method="post" class="row g-3">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <input type="hidden" name="imagem_id" value="{{ imagem_id }}">
+    <div class="col-12">
+      <button type="submit" class="btn btn-primary">Confirmar e Salvar</button>
+    </div>
+  </form>
+</div>
 {% endblock %}

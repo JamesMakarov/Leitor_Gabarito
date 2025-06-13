@@ -1,10 +1,15 @@
 {% extends "accounts/base.html" %}
 {% block title %}Upload Biblioteca{% endblock %}
 {% block content %}
-    <h2>Enviar Imagem para Leitura</h2>
-    <form action="{% url 'upload' %}" method="post" enctype="multipart/form-data">
-        {% csrf_token %}
-        <input type="file" name="imagem" accept="image/*" required>
-        <button type="submit">Enviar</button>
-    </form>
+<div class="container" style="max-width: 600px;">
+  <h2 class="mb-4">Enviar Imagem para Leitura</h2>
+  <form action="{% url 'upload' %}" method="post" enctype="multipart/form-data" class="mb-3">
+    {% csrf_token %}
+    <div class="mb-3">
+      <label for="imagem" class="form-label">Selecione uma imagem:</label>
+      <input type="file" name="imagem" id="imagem" class="form-control" accept="image/*" required>
+    </div>
+    <button type="submit" class="btn btn-success">Enviar</button>
+  </form>
+</div>
 {% endblock %}

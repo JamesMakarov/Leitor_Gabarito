@@ -1,18 +1,22 @@
 {% extends "accounts/base.html" %}
 {% block title %}Galeria{% endblock %}
 {% block content %}
+<div class="container">
+  <h2 class="mb-4">Minhas Imagens</h2>
 
-<h2>Minhas Imagens</h2>
-
-<div style="display: flex; flex-wrap: wrap; gap: 10px;">
-  {% for imagem in imagens %}
-    <div style="border: 1px solid #ccc; padding: 5px;">
-      <img src="{% url 'imagem_binaria' imagem.id %}" alt="Imagem {{ forloop.counter }}" width="200">
-      <p>Enviada em: {{ imagem.criado_em|date:"d/m/Y H:i" }}</p>
-    </div>
-  {% empty %}
-    <p>Você ainda não enviou nenhuma imagem.</p>
-  {% endfor %}
+  <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 g-4">
+    {% for imagem in imagens %}
+      <div class="col">
+        <div class="card h-100">
+          <img src="{% url 'imagem_binaria' imagem.id %}" class="card-img-top" alt="Imagem {{ forloop.counter }}">
+          <div class="card-body">
+            <p class="card-text">Enviada em: {{ imagem.criado_em|date:"d/m/Y H:i" }}</p>
+          </div>
+        </div>
+      </div>
+    {% empty %}
+      <p>Você ainda não enviou nenhuma imagem.</p>
+    {% endfor %}
+  </div>
 </div>
-
 {% endblock %}

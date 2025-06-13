@@ -1,28 +1,33 @@
 {% extends "accounts/base.html" %}
 {% block title %}Meus Dados{% endblock %}
 {% block content %}
+<div class="container">
+  <h2 class="mb-4">Meus Dados</h2>
 
-<h2>Meus Dados</h2>
+  <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+    {% for dado in dados %}
+      <div class="col">
+        <div class="card shadow-sm">
+          <div class="card-body">
+            <h5 class="card-title">Prova {{ dado.id_prova }}</h5>
+            <p class="card-text"><strong>Participante:</strong> {{ dado.id_participante }}</p>
+            <p class="card-text"><strong>Data:</strong> {{ dado.criado_em|date:"d/m/Y H:i" }}</p>
+            <p class="card-text"><strong>Pontuação:</strong> {{ dado.pontuacao }} / 20</p>
 
-<div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 15px;">
-  {% for dado in dados %}
-    <div style="border: 1px solid #ccc; padding: 15px; border-radius: 8px; background: #f9f9f9;">
-      <h3>Prova {{ dado.id_prova }}</h3>
-      <p><strong>Participante:</strong> {{ dado.id_participante }}</p>
-      <p><strong>Data:</strong> {{ dado.criado_em|date:"d/m/Y H:i" }}</p>
-      <p><strong>Pontuação:</strong> {{ dado.pontuacao }} / 20</p>
+            <a href="{% url 'editar_dado' dado.id %}" class="btn btn-sm btn-outline-primary">✏️ Ver e Editar</a>
 
-      <a href="{% url 'editar_dado' dado.id %}" style="text-decoration: none;">
-        <button>✏️ Ver e Editar</button>
-      </a>
-      <form action="{% url 'deletar_dado' dado.id %}" method="post" style="margin-top: 10px;">
-        {% csrf_token %}
-        <button type="submit" onclick="return confirm('Deseja realmente deletar este dado?')">🗑️ Deletar</button>
-      </form>
-    </div>
-  {% empty %}
-    <p>Você ainda não tem dados cadastrados.</p>
-  {% endfor %}
+            <form action="{% url 'deletar_dado' dado.id %}" method="post" class="mt-2">
+              {% csrf_token %}
+              <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('Deseja realmente deletar este dado?')">
+                🗑️ Deletar
+              </button>
+            </form>
+          </div>
+        </div>
+      </div>
+    {% empty %}
+      <p>Você ainda não tem dados cadastrados.</p>
+    {% endfor %}
+  </div>
 </div>
-
 {% endblock %}

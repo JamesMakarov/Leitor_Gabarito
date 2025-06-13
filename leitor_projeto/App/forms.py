@@ -29,3 +29,30 @@ class DadosImagemForm(forms.ModelForm):
     class Meta:
         model = DadosImagem
         fields = ['id_prova', 'id_participante', 'leitura']
+
+OPCOES = [
+    ('a', 'A'),
+    ('b', 'B'),
+    ('c', 'C'),
+    ('d', 'D'),
+    ('e', 'E'),
+    ('0', 'Branco'),
+    ('?', 'Mais de uma'),
+]
+
+class RevisaoGabaritoForm(forms.Form):
+    id_prova = forms.IntegerField(label="ID da Prova")
+    id_participante = forms.IntegerField(label="ID do Participante")
+
+    def __init__(self, *args, leitura=None, **kwargs):
+        super().__init__(*args, **kwargs)
+        for i in range(20):
+            letra = leitura[i] if leitura and i < len(leitura) else ''
+            self.fields[f'questao_{i+1}'] = forms.ChoiceField(
+                label=f"Questão {i+1}",
+                choices=[('', '---')] + OPCOES,
+                required=False,
+                initial=letra if letra in dict(OPCOES) else '',
+                widget=forms.RadioSelect
+            )
+

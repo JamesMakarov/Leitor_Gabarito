@@ -2,7 +2,7 @@
 {% block title %}Editar Dado{% endblock %}
 {% block content %}
 
-<h2>Editar Dado</h2>
+<h2>Editar Gabarito</h2>
 
 <form method="post">
   {% csrf_token %}
@@ -10,6 +10,6 @@
   <button type="submit">Salvar alterações</button>
 </form>
 
-<a href="{% url 'dados_leituras' %}">Voltar</a>
+<a href="{% url 'dados_leituras' %}">← Voltar</a>
 
 {% endblock %}

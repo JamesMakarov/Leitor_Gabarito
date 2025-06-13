@@ -4,19 +4,24 @@
 
 <h2>Meus Dados</h2>
 
-<div style="display: flex; flex-wrap: wrap; gap: 10px; flex-direction: column;">
+<div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 15px;">
   {% for dado in dados %}
-    <div style="border: 1px solid #ccc; padding: 10px;">
-      <p><strong>ID Prova:</strong> {{ dado.id_prova }}</p>
-      <p><strong>ID Participante:</strong> {{ dado.id_participante }}</p>
-      <p><strong>Leitura:</strong> {{ dado.leitura }}</p>
-      <p><strong>Enviada em:</strong> {{ dado.criado_em|date:"d/m/Y H:i" }}</p>
+    <div style="border: 1px solid #ccc; padding: 15px; border-radius: 8px; background: #f9f9f9;">
+      <h3>Prova {{ dado.id_prova }}</h3>
+      <p><strong>Participante:</strong> {{ dado.id_participante }}</p>
+      <p><strong>Data:</strong> {{ dado.criado_em|date:"d/m/Y H:i" }}</p>
+      <p><strong>Pontuação:</strong> {{ dado.pontuacao }} / 20</p>
 
-      <a href="{% url 'editar_dado' dado.id %}">✏️ Editar</a> |
-      <a href="{% url 'deletar_dado' dado.id %}" onclick="return confirm('Tem certeza que deseja deletar?')">🗑️ Deletar</a>
+      <a href="{% url 'editar_dado' dado.id %}" style="text-decoration: none;">
+        <button>✏️ Ver e Editar</button>
+      </a>
+      <form action="{% url 'deletar_dado' dado.id %}" method="post" style="margin-top: 10px;">
+        {% csrf_token %}
+        <button type="submit" onclick="return confirm('Deseja realmente deletar este dado?')">🗑️ Deletar</button>
+      </form>
     </div>
   {% empty %}
-    <p>Você ainda não tem dados.</p>
+    <p>Você ainda não tem dados cadastrados.</p>
   {% endfor %}
 </div>
 

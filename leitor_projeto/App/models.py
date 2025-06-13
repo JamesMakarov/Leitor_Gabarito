@@ -5,10 +5,11 @@ User = get_user_model()
 
 class Perfil(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
-    nome_completo = models.CharField(max_length=255)
-    bio = models.TextField(blank=True)
-    nascimento = models.DateField(null=True, blank=True)
+    nome_completo = models.CharField(max_length=255, blank=True, null=True)
+    bio = models.TextField(blank=True, null=True)
+    nascimento = models.DateField(blank=True, null=True)
     foto = models.BinaryField(blank=True, null=True)
+
 
 class ImagemUpload(models.Model):
     usuario = models.ForeignKey(User, on_delete=models.CASCADE)
@@ -22,4 +23,5 @@ class DadosImagem(models.Model):
     id_prova = models.IntegerField()
     id_participante = models.IntegerField()
     leitura = models.TextField()
+    pontuacao = models.IntegerField(default=0)
     criado_em = models.DateTimeField(auto_now_add=True)

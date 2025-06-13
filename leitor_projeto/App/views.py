@@ -9,7 +9,7 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import get_user_model
 from .models import Perfil
-from .forms import PerfilForm, DadosImagemForm
+from .forms import PerfilForm, RevisaoGabaritoForm, DadosImagemForm
 from tempfile import NamedTemporaryFile
 from .models import ImagemUpload
 from django.core.files import File
@@ -17,6 +17,7 @@ from PIL import Image
 from .biblioteca import leitor_lib
 from django.http import HttpResponse, Http404
 from .models import ImagemUpload, DadosImagem
+from .utils import GABARITOS, calcular_pontuacao
 
 @login_required
 def iniciar_leitura(request):
@@ -38,11 +39,9 @@ def iniciar_leitura(request):
                     tmp_path = tmp.name
 
                 resultado = leitor_lib.read_image_path(tmp_path.encode("utf-8"))
-
                 leitura = resultado.leitura
                 leitura_decodificada = leitura.decode("utf-8") if leitura else ""
 
-                # ⚠️ Salvar a imagem original no banco
                 imagem_upload.seek(0)
                 imagem_binaria = imagem_upload.read()
                 imagem_obj = ImagemUpload.objects.create(
@@ -51,18 +50,19 @@ def iniciar_leitura(request):
                     conteudo=imagem_binaria
                 )
 
-                # Apagar imagem temporária
                 os.remove(tmp_path)
 
-                form = DadosImagemForm(initial={
-                    'id_prova': resultado.id_prova,
-                    'id_participante': resultado.id_participante,
-                    'leitura': leitura_decodificada,
-                })
+                form = RevisaoGabaritoForm(
+                    leitura=leitura_decodificada,
+                    initial={
+                        'id_prova': resultado.id_prova,
+                        'id_participante': resultado.id_participante
+                    }
+                )
 
                 return render(request, 'revisar_leitura.html', {
                     'form': form,
-                    'imagem_id': imagem_obj.id  # Passa o ID para o template
+                    'imagem_id': imagem_obj.id
                 })
 
             except Exception as e:
@@ -71,28 +71,41 @@ def iniciar_leitura(request):
                 return JsonResponse({"erro": -99, "mensagem": f"Erro inesperado: {str(e)}"})
 
         else:
-            # Submissão do formulário de revisão
             imagem_id = request.POST.get('imagem_id')
             imagem = get_object_or_404(ImagemUpload, pk=imagem_id, usuario=request.user)
 
-            form = DadosImagemForm(request.POST)
+            form = RevisaoGabaritoForm(request.POST)
             if form.is_valid():
-                leitura = form.save(commit=False)
-                leitura.usuario = request.user
-                leitura.imagem = imagem  # ✅ associa a imagem corretamente
-                leitura.save()
-                messages.success(request, "Leitura confirmada e salva com sucesso!")
+                respostas = []
+                for i in range(20):
+                    valor = form.cleaned_data.get(f'questao_{i+1}', '')
+                    respostas.append(valor if valor else 'x')
+
+                leitura_str = ''.join(respostas)
+
+                id_prova = form.cleaned_data['id_prova']
+                gabarito = GABARITOS.get(id_prova)
+                pontuacao = calcular_pontuacao(leitura_str, gabarito)
+
+                DadosImagem.objects.create(
+                    usuario=request.user,
+                    imagem=imagem,
+                    id_prova=id_prova,
+                    id_participante=form.cleaned_data['id_participante'],
+                    leitura=leitura_str,
+                    pontuacao=pontuacao
+                )
+
+                messages.success(request, f"Leitura confirmada! Pontuação: {pontuacao}/20")
                 return redirect('home')
             else:
                 messages.error(request, "Erro ao salvar. Verifique os campos.")
                 return render(request, 'revisar_leitura.html', {
                     'form': form,
-                    'imagem_id': imagem_id  # reenviar no erro para manter estado
+                    'imagem_id': imagem_id
                 })
 
     return render(request, "upload.html")
-
-
 
 User = get_user_model()
 
@@ -142,24 +155,17 @@ def perfil_view(request):
         form = PerfilForm(request.POST, request.FILES, instance=perfil)
         if form.is_valid():
             form.save()
-            return redirect('perfil')  # só redireciona se salvou
+            return redirect('perfil')
     else:
         form = PerfilForm(instance=perfil)
-
-    # perfil está preenchido se nome_completo e bio foram salvos
-    perfil_preenchido = all([
-    perfil.nome_completo,
-    perfil.bio,
-    perfil.nascimento,
-    perfil.foto
-])
 
     context = {
         'form': form,
         'perfil': perfil,
-        'mostrar_formulario': not perfil_preenchido,
+        'mostrar_formulario': True  # mostrar sempre
     }
     return render(request, 'accounts/perfil.html', context)
+
 
 @login_required
 def imagem_binaria(request, imagem_id):
@@ -184,15 +190,39 @@ def editar_dado(request, dado_id):
     dado = get_object_or_404(DadosImagem, pk=dado_id, usuario=request.user)
 
     if request.method == 'POST':
-        form = DadosImagemForm(request.POST, instance=dado)
+        form = RevisaoGabaritoForm(request.POST)
         if form.is_valid():
-            form.save()
-            messages.success(request, "Dados atualizados com sucesso!")
+            respostas = []
+            for i in range(20):
+                valor = form.cleaned_data.get(f'questao_{i+1}', '')
+                respostas.append(valor if valor else 'x')
+            leitura_str = ''.join(respostas)
+
+            id_prova = form.cleaned_data['id_prova']
+            gabarito = GABARITOS.get(id_prova)
+            pontuacao = calcular_pontuacao(leitura_str, gabarito)
+
+            # Atualiza os dados
+            dado.id_prova = id_prova
+            dado.id_participante = form.cleaned_data['id_participante']
+            dado.leitura = leitura_str
+            dado.pontuacao = pontuacao
+            dado.save()
+
+            messages.success(request, f"Dados atualizados com sucesso! Nova pontuação: {pontuacao}/20")
             return redirect('dados_leituras')
     else:
-        form = DadosImagemForm(instance=dado)
+        leitura_str = dado.leitura or ""
+        form = RevisaoGabaritoForm(
+            leitura=leitura_str,
+            initial={
+                'id_prova': dado.id_prova,
+                'id_participante': dado.id_participante
+            }
+        )
 
-    return render(request, 'editar_dado.html', {'form': form})
+    return render(request, 'editar_dado.html', {'form': form, 'dado': dado})
+
 
 @login_required
 def deletar_dado(request, dado_id):

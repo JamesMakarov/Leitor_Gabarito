@@ -1,15 +1,42 @@
 {% extends "accounts/base.html" %}
+{% load form_filters %}
 {% block title %}Revisar respostas e informações{% endblock %}
 {% block content %}
 <div class="container">
   <h2 class="mb-4">Revisar respostas e informações</h2>
 
-  <form method="post" class="row g-3">
+  <form method="post" class="row g-4">
     {% csrf_token %}
-    {{ form.as_p }}
+
+    <!-- Campos fixos -->
+    <div class="col-md-6">
+      <label class="form-label">{{ form.id_prova.label }}</label>
+      {{ form.id_prova|add_class:"form-control" }}
+    </div>
+    <div class="col-md-6">
+      <label class="form-label">{{ form.id_participante.label }}</label>
+      {{ form.id_participante|add_class:"form-control" }}
+    </div>
+
+    <hr class="my-4">
+    <h5>Respostas:</h5>
+
+    <!-- Campos dinâmicos das questões -->
+    {% for field in form %}
+      {% if field.name != 'id_prova' and field.name != 'id_participante' %}
+        <div class="col-md-4">
+          <div class="form-group">
+            <label class="form-label">{{ field.label }}</label>
+            {{ field }}
+          </div>
+        </div>
+      {% endif %}
+    {% endfor %}
+
     <input type="hidden" name="imagem_id" value="{{ imagem_id }}">
-    <div class="col-12">
-      <button type="submit" class="btn btn-primary">Confirmar e Salvar</button>
+
+    <div class="col-12 mt-4">
+      <button type="submit" class="btn btn-success">✅ Confirmar e Salvar</button>
     </div>
   </form>
 </div>

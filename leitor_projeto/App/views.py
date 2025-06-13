@@ -23,6 +23,8 @@ from .utils import GABARITOS, calcular_pontuacao
 def iniciar_leitura(request):
     if request.method == "POST":
         if request.FILES.get("imagem"):
+            ImagemUpload.objects.filter(usuario=request.user, confirmada=False).delete()
+
             imagem_upload = request.FILES["imagem"]
 
             if not leitor_lib:
@@ -47,7 +49,8 @@ def iniciar_leitura(request):
                 imagem_obj = ImagemUpload.objects.create(
                     usuario=request.user,
                     nome_arquivo=imagem_upload.name,
-                    conteudo=imagem_binaria
+                    conteudo=imagem_binaria,
+                    confirmada=False
                 )
 
                 os.remove(tmp_path)
@@ -96,6 +99,9 @@ def iniciar_leitura(request):
                     pontuacao=pontuacao
                 )
 
+                imagem.confirmada = True
+                imagem.save()
+
                 messages.success(request, f"Leitura confirmada! Pontuação: {pontuacao}/20")
                 return redirect('home')
             else:
@@ -105,12 +111,19 @@ def iniciar_leitura(request):
                     'imagem_id': imagem_id
                 })
 
+    # <-- Aqui está a limpeza final -->
+    ImagemUpload.objects.filter(usuario=request.user, confirmada=False).delete()
     return render(request, "upload.html")
+
+
 
 User = get_user_model()
 
 def login_view(request):
-    if request.method == "POST":
+    if request.user.is_authenticated:
+        messages.success(request, "Você já está logado!")
+        return redirect('home')
+    elif request.method == "POST":
         email = request.POST['email']
         password = request.POST['password']
         user = authenticate(request, username=email, password=password)
@@ -122,6 +135,9 @@ def login_view(request):
     return render(request, 'accounts/login.html')
 
 def register_view(request):
+    if request.user.is_authenticated:
+        messages.success(request, "Você já está logado!")
+        return redirect('home')
     if request.method == "POST":
         email = request.POST['email']
         password = request.POST['password']
@@ -177,7 +193,9 @@ def imagem_binaria(request, imagem_id):
 
 @login_required
 def galeria_usuario(request):
+    ImagemUpload.objects.filter(usuario=request.user, confirmada=False).delete()
     imagens = ImagemUpload.objects.filter(usuario=request.user).order_by('-criado_em')
+    
     return render(request, 'galeria.html', {'imagens': imagens})
 
 @login_required

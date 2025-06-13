@@ -16,10 +16,11 @@ class ImagemUpload(models.Model):
     nome_arquivo = models.CharField(max_length=255)
     conteudo = models.BinaryField()
     criado_em = models.DateTimeField(auto_now_add=True)
+    confirmada = models.BooleanField(default=False)
 
 class DadosImagem(models.Model):
     usuario = models.ForeignKey(User, on_delete=models.CASCADE)
-    imagem = models.OneToOneField('ImagemUpload', on_delete=models.CASCADE)  # ⬅ aqui está o segredo
+    imagem = models.OneToOneField('ImagemUpload', on_delete=models.CASCADE)
     id_prova = models.IntegerField()
     id_participante = models.IntegerField()
     leitura = models.TextField()

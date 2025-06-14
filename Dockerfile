@@ -29,5 +29,5 @@ COPY . .
 
 EXPOSE 8000
 
-# <- Aqui está a chave pra logs aparecerem:
+
 CMD ["python3", "-u", "leitor_projeto/manage.py", "runserver", "0.0.0.0:8000"]

@@ -1,12 +1,11 @@
 import os
 import ctypes
 from pathlib import Path
+from django.conf import settings
 
-# Caminho base do projeto
-BASE_DIR = Path(__file__).resolve().parent.parent
 
 # Caminho para a biblioteca
-LIBRARY_PATH = BASE_DIR / "App" / "libs" / "biblioteca" / "libleitor.so"
+LIBRARY_PATH = settings.BASE_DIR / "App" / "libs" / "biblioteca" / "libleitor.so"
 
 # Carrega a biblioteca externa
 try:
@@ -37,5 +36,5 @@ if leitor_lib:
     ]
 
 # Cria diretório de uploads se necessário
-UPLOAD_DIR = BASE_DIR / "uploads"
+UPLOAD_DIR = settings.BASE_DIR / "uploads"
 UPLOAD_DIR.mkdir(parents=True, exist_ok=True)

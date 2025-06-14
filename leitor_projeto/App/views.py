@@ -18,13 +18,21 @@ from .biblioteca import leitor_lib
 from django.http import HttpResponse, Http404
 from .models import ImagemUpload, DadosImagem
 from .utils import GABARITOS, calcular_pontuacao
+from django.conf import settings
+from django import template
+import base64
+
+def redirecionar_para_login(request):
+    return redirect('login')  # ou use o nome da URL do login se for diferente
+
 
 @login_required
 def iniciar_leitura(request):
     if request.method == "POST":
+        
         if request.FILES.get("imagem"):
             ImagemUpload.objects.filter(usuario=request.user, confirmada=False).delete()
-
+            
             imagem_upload = request.FILES["imagem"]
 
             if not leitor_lib:
@@ -161,7 +169,18 @@ def logout_view(request):
 
 @login_required
 def home_view(request):
-    return render(request, 'accounts/home.html')
+    endereco = str(settings.BASE_DIR)
+    return render(request, 'accounts/home.html', {'endereco': endereco})
+
+@login_required
+def imagem_perfil(request, user_id):
+    try:
+        perfil = Perfil.objects.get(user_id=user_id)
+        if not perfil.foto:
+            raise Http404("Sem imagem")
+        return HttpResponse(perfil.foto, content_type="image/png")
+    except Perfil.DoesNotExist:
+        raise Http404("Perfil não encontrado")
 
 @login_required
 def perfil_view(request):
@@ -178,7 +197,7 @@ def perfil_view(request):
     context = {
         'form': form,
         'perfil': perfil,
-        'mostrar_formulario': True  # mostrar sempre
+        'mostrar_formulario': True
     }
     return render(request, 'accounts/perfil.html', context)
 

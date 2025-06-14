@@ -1,3 +1,7 @@
 Caros programadores, quando vocês forem fazer algo no código
 primeiro instalem o wsl, criem uma venv, e ativem ela
 instalem os requeriments.txt.
+
+Para rodar o docker:
+docker build -t meu_app_django .
+docker-compose up

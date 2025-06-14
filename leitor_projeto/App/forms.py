@@ -2,7 +2,7 @@ from django import forms
 from .models import Perfil, DadosImagem
 
 class PerfilForm(forms.ModelForm):
-    foto_arquivo = forms.ImageField(required=False, label="Foto de perfil")  # novo campo de upload
+    foto_arquivo = forms.ImageField(required=False, label="Foto de perfil")
 
     class Meta:
         model = Perfil
@@ -10,14 +10,11 @@ class PerfilForm(forms.ModelForm):
 
     def save(self, commit=True):
         instance = super().save(commit=False)
-
         if self.cleaned_data.get('foto_arquivo'):
             imagem = self.cleaned_data['foto_arquivo']
-            instance.foto = imagem.read()  # lê como binário
-
+            instance.foto = imagem.read()
         if commit:
             instance.save()
-
         return instance
 
 class LeituraGabaritoForm(forms.ModelForm):

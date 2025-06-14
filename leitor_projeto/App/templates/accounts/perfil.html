@@ -1,7 +1,8 @@
 {% extends "accounts/base.html" %}
 {% load form_filters %}
-{% load base64_filters %} {# carrega o filtro para imagem binária #}
+
 {% block title %}Meu Perfil{% endblock %}
+
 {% block content %}
 <div class="container">
   <h2 class="mb-4">Meu Perfil</h2>
@@ -55,7 +56,15 @@
 
   {% else %}
     <div class="card shadow-sm">
-      <div class="card-body">
+      <div class="card-body text-center">
+
+        {% if perfil.foto %}
+          <img src="{% url 'imagem_perfil' perfil.user.id %}"
+               class="rounded-circle img-thumbnail mb-3"
+               style="width: 150px; height: 150px; object-fit: cover;"
+               alt="Foto de perfil">
+        {% endif %}
+
         <p><strong>Nome completo:</strong> {{ perfil.nome_completo|default:"Não informado" }}</p>
         <p><strong>Bio:</strong> {{ perfil.bio|default:"Não informada" }}</p>
         <p><strong>Data de nascimento:</strong>
@@ -65,14 +74,6 @@
             Não informado
           {% endif %}
         </p>
-        <p><strong>Foto de perfil:</strong></p>
-        {% if perfil.foto %}
-          {% with perfil.foto|b64encode as imagem_base64 %}
-            <img src="data:image/png;base64,{{ imagem_base64 }}" class="img-thumbnail" style="max-width: 200px;">
-          {% endwith %}
-        {% else %}
-          <p>Sem foto enviada.</p>
-        {% endif %}
       </div>
     </div>
   {% endif %}

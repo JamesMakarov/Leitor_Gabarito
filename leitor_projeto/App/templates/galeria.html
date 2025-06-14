@@ -8,7 +8,10 @@
     {% for imagem in imagens %}
       <div class="col">
         <div class="card h-100">
-          <img src="{% url 'imagem_binaria' imagem.id %}" class="card-img-top" alt="Imagem {{ forloop.counter }}">
+          <!-- Link externo com target="_blank" -->
+          <a href="{% url 'imagem_binaria' imagem.id %}" target="_blank">
+            <img src="{% url 'imagem_binaria' imagem.id %}" class="card-img-top" alt="Imagem {{ forloop.counter }}">
+          </a>
           <div class="card-body">
             <p class="card-text">Enviada em: {{ imagem.criado_em|date:"d/m/Y H:i" }}</p>
           </div>

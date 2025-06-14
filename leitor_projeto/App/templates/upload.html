@@ -1,15 +1,20 @@
 {% extends "accounts/base.html" %}
 {% block title %}Upload Biblioteca{% endblock %}
+
 {% block content %}
-<div class="container" style="max-width: 600px;">
-  <h2 class="mb-4">Enviar Imagem para Leitura</h2>
-  <form action="{% url 'upload' %}" method="post" enctype="multipart/form-data" class="mb-3">
-    {% csrf_token %}
-    <div class="mb-3">
-      <label for="imagem" class="form-label">Selecione uma imagem:</label>
-      <input type="file" name="imagem" id="imagem" class="form-control" accept="image/*" required>
-    </div>
-    <button type="submit" class="btn btn-success">Enviar</button>
-  </form>
+<div class="d-flex justify-content-center align-items-center" style="min-height: calc(100vh - 80px);">
+  <div class="card p-4 shadow" style="max-width: 600px; width: 100%;">
+    <h2 class="mb-4 text-center">Enviar Imagem para Leitura</h2>
+    <form action="{% url 'upload' %}" method="post" enctype="multipart/form-data">
+      {% csrf_token %}
+      <div class="mb-3">
+        <label for="imagem" class="form-label">Selecione uma imagem:</label>
+        <input type="file" name="imagem" id="imagem" class="form-control" accept="image/*" required>
+      </div>
+      <div class="d-grid">
+        <button type="submit" class="btn btn-success">Enviar</button>
+      </div>
+    </form>
+  </div>
 </div>
 {% endblock %}

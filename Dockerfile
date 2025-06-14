@@ -1,6 +1,7 @@
 FROM ubuntu:24.04
 
 ENV DEBIAN_FRONTEND=noninteractive
+ENV PYTHONUNBUFFERED=1
 
 RUN apt-get update && apt-get install -y \
     python3 \
@@ -17,6 +18,7 @@ RUN apt-get update && apt-get install -y \
     rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
+
 COPY leitor_projeto/requirements.txt .
 RUN pip3 install --no-cache-dir --break-system-packages -r requirements.txt
 
@@ -24,5 +26,8 @@ COPY leitor_projeto/App/libs/biblioteca/*.so* /usr/local/lib/
 RUN ldconfig
 
 COPY . .
+
 EXPOSE 8000
-CMD ["python3", "leitor_projeto/manage.py", "runserver", "0.0.0.0:8000"]
+
+# <- Aqui está a chave pra logs aparecerem:
+CMD ["python3", "-u", "leitor_projeto/manage.py", "runserver", "0.0.0.0:8000"]

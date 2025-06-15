@@ -1,22 +1,24 @@
 {% extends "accounts/base.html" %}
 {% block title %}Registrar{% endblock %}
 {% block content %}
-<div class="container" style="max-width: 500px;">
-  <h2 class="mb-4">Criar Conta</h2>
-  <form method="post" class="needs-validation">
-    {% csrf_token %}
+<div class="page-center">
+  <div class="border rounded shadow p-5" style="min-width: 400px; max-width: 600px; width: 100%;">
+    <h2 class="mb-4 text-center">Criar Conta</h2>
+    <form method="post">
+      {% csrf_token %}
 
-    <div class="mb-3">
-      <label for="email" class="form-label">Email:</label>
-      <input type="email" name="email" id="email" class="form-control" required>
-    </div>
+      <div class="mb-3">
+        <label for="email" class="form-label">Email:</label>
+        <input type="email" name="email" id="email" class="form-control" required>
+      </div>
 
-    <div class="mb-3">
-      <label for="password" class="form-label">Senha:</label>
-      <input type="password" name="password" id="password" class="form-control" required>
-    </div>
+      <div class="mb-3">
+        <label for="password" class="form-label">Senha:</label>
+        <input type="password" name="password" id="password" class="form-control" required>
+      </div>
 
-    <button type="submit" class="btn btn-primary">Criar Conta</button>
-  </form>
+      <button type="submit" class="btn btn-primary w-100">Criar Conta</button>
+    </form>
+  </div>
 </div>
 {% endblock %}

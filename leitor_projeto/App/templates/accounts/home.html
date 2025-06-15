@@ -1,9 +1,153 @@
 {% extends "accounts/base.html" %}
 {% block title %}Página Inicial{% endblock %}
 {% block content %}
-<div class="container">
-  <h2 class="mb-3">Bem-vindo, {{ user.email }}</h2>
-  <p class="lead">Você está logado!</p>
-  <p class="lead">Endereço do projeto: {{ endereco }}</p>
+
+<div class="container my-5">
+
+  <!-- Boas-vindas com destaque visual -->
+  <div class="text-center mb-5">
+    <h1 class="fw-bold display-4">🚀 Bem-vindo(a) à Olimpíada Cearense de Informática</h1>
+    <p class="lead">Desperte seu potencial. Construa o futuro com algoritmos e lógica!</p>
+  </div>
+
+  <!-- Carrossel de frases -->
+<div id="ociCarousel" class="carousel slide mb-5" data-bs-ride="carousel" data-bs-interval="3000">
+
+  <div class="carousel-inner rounded shadow-sm">
+    <div class="carousel-item active text-bg-dark p-5">
+      <div class="d-flex flex-column justify-content-center align-items-center" style="min-height: 250px;">
+        <h2>💡 Desafios instigantes</h2>
+        <p>Teste seus conhecimentos com problemas do mundo real.</p>
+      </div>
+    </div>
+    <div class="carousel-item text-bg-dark p-5">
+      <div class="d-flex flex-column justify-content-center align-items-center" style="min-height: 250px;">
+        <h2>🤝 Conexões e Aprendizado</h2>
+        <p>Conheça pessoas que também amam tecnologia.</p>
+      </div>
+    </div>
+    <div class="carousel-item text-bg-dark p-5">
+      <div class="d-flex flex-column justify-content-center align-items-center" style="min-height: 250px;">
+        <h2>🏆 Reconhecimento</h2>
+        <p>Participe e conquiste certificados e medalhas oficiais!</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Botões de navegação -->
+  <button class="carousel-control-prev" type="button" data-bs-target="#ociCarousel" data-bs-slide="prev">
+    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+    <span class="visually-hidden">Anterior</span>
+  </button>
+  <button class="carousel-control-next" type="button" data-bs-target="#ociCarousel" data-bs-slide="next">
+    <span class="carousel-control-next-icon" aria-hidden="true"></span>
+    <span class="visually-hidden">Próximo</span>
+  </button>
 </div>
+
+  <!-- Seções em cards -->
+  <div class="row g-4 mb-5">
+    <div class="col-md-4">
+      <div class="card h-100 shadow-sm border-0">
+        <div class="card-body text-center">
+          <i class="bi bi-code-slash display-4 text-primary mb-3"></i>
+          <h5 class="card-title fw-bold">O que é a OCI?</h5>
+          <p class="card-text">A Olimpíada Cearense de Informática busca estimular o raciocínio lógico, resolução de problemas e introduzir estudantes no mundo da tecnologia e programação.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-4">
+      <div class="card h-100 shadow-sm border-0">
+        <div class="card-body text-center">
+          <i class="bi bi-pencil-square display-4 text-primary mb-3"></i>
+          <h5 class="card-title fw-bold">Como participar?</h5>
+          <p class="card-text">A inscrição é gratuita e aberta para estudantes do ensino fundamental, médio e universitário. Fique atento aos editais e cronogramas!</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-4">
+      <div class="card h-100 shadow-sm border-0">
+        <div class="card-body text-center">
+          <i class="bi bi-award display-4 text-primary mb-3"></i>
+          <h5 class="card-title fw-bold">Benefícios</h5>
+          <p class="card-text">Participe e tenha acesso a certificados, medalhas, oficinas, e a oportunidade de ingressar no mundo da computação competitiva.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Chamada de ação -->
+  <div class="row align-items-center bg-dark text-light p-5 mb-5 rounded-3 shadow">
+    <div class="col-md-8">
+      <h2 class="fw-bold mb-3">⚡ Desafie seus limites!</h2>
+      <p class="fs-5">A OCI é mais do que uma competição. É uma porta de entrada para um universo de oportunidades em tecnologia, ciência e inovação.</p>
+      <a href="#" class="btn btn-warning btn-lg mt-3 fw-bold">Quero Saber Mais</a>
+    </div>
+    <div class="col-md-4 d-none d-md-block">
+      <img src="https://cdn-icons-png.flaticon.com/512/9074/9074283.png" class="img-fluid" alt="Ilustração Tecnologia" />
+    </div>
+  </div>
+
+  <!-- Cronograma -->
+  <h3 class="fw-bold mb-4 text-center">📅 Cronograma 2025</h3>
+  <ul class="list-group list-group-flush mb-5 shadow-sm rounded">
+    <li class="list-group-item bg-light"><strong>✅ Inscrições:</strong> 01/07/2025 a 31/07/2025</li>
+    <li class="list-group-item bg-light"><strong>📝 Primeira fase (online):</strong> 15/08/2025</li>
+    <li class="list-group-item bg-light"><strong>🏆 Fase final (presencial):</strong> 10/09/2025</li>
+    <li class="list-group-item bg-light"><strong>🎉 Premiação:</strong> 20/09/2025</li>
+  </ul>
+
+  <!-- Links rápidos -->
+  <h4 class="fw-bold mb-4 text-center">🔗 Acesso Rápido</h4>
+  <div class="row g-4 mb-5">
+    <div class="col-md-3">
+      <div class="card text-center shadow-sm border-0 h-100">
+        <div class="card-body">
+          <i class="bi bi-cloud-arrow-up-fill display-5 mb-3 text-primary"></i>
+          <h5 class="card-title">Upload de Arquivos</h5>
+          <a href="{% url 'upload' %}" class="btn btn-outline-primary btn-sm">Ir para Upload</a>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card text-center shadow-sm border-0 h-100">
+        <div class="card-body">
+          <i class="bi bi-images display-5 mb-3 text-primary"></i>
+          <h5 class="card-title">Galeria</h5>
+          <a href="{% url 'galeria' %}" class="btn btn-outline-primary btn-sm">Ver Galeria</a>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card text-center shadow-sm border-0 h-100">
+        <div class="card-body">
+          <i class="bi bi-card-checklist display-5 mb-3 text-primary"></i>
+          <h5 class="card-title">Seus Dados</h5>
+          <a href="{% url 'dados' %}" class="btn btn-outline-primary btn-sm">Acessar Dados</a>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card text-center shadow-sm border-0 h-100">
+        <div class="card-body">
+          <i class="bi bi-person-fill display-5 mb-3 text-primary"></i>
+          <h5 class="card-title">Perfil</h5>
+          <a href="{% url 'perfil' %}" class="btn btn-outline-primary btn-sm">Ver Perfil</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Depoimento inspirador -->
+  <div class="bg-light text-dark p-5 rounded shadow text-center">
+    <blockquote class="blockquote">
+      <p class="mb-0 fs-5">"A lógica pode levar de A a B. A imaginação pode te levar a qualquer lugar."</p>
+    </blockquote>
+    <footer class="blockquote-footer mt-3">Albert Einstein</footer>
+  </div>
+
+</div>
+
 {% endblock %}

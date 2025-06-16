@@ -41,14 +41,14 @@ O sistema permite que os usuários cadastrem suas contas, enviem imagens dos gab
 
 ### 1. Upload e leitura inicial
 
-1. O usuário logado acessa a página de envio (/upload/) e escolhe um arquivo de imagem.
+1. O usuário logado acessa a página de envio (`/upload/`) e escolhe um arquivo de imagem.
 2. A imagem é verificada e salva temporariamente.
-3. A biblioteca C é chamada via Python (leitor_lib.read_image_path()), que retorna:
+3. A biblioteca C é chamada via Python (`leitor_lib.read_image_path()`), que retorna:
    - ID da prova
    - ID do participante
    - Alternativas marcadas
    - Status de erro
-4. Os dados são armazenados no modelo ImagemUpload com a flag confirmada=False.
+4. Os dados são armazenados no modelo `ImagemUpload` com a flag `confirmada=False`.
 5. O usuário é redirecionado para uma tela de revisão com as respostas lidas automaticamente.
 
 ### 2. Revisão e correção
@@ -58,7 +58,7 @@ O sistema permite que os usuários cadastrem suas contas, enviem imagens dos gab
 3. Ao submeter o formulário:
    - As respostas são comparadas com um gabarito predefinido.
    - A pontuação é calculada.
-   - Os dados finais são salvos no modelo DadosImagem.
+   - Os dados finais são salvos no modelo `DadosImagem`.
    - A imagem é marcada como confirmada.
 
 ---
@@ -66,18 +66,18 @@ O sistema permite que os usuários cadastrem suas contas, enviem imagens dos gab
 ## Estrutura do código
 
 ### models.py
-- Perfil: armazena informações adicionais dos usuários (foto, etc.).
-- ImagemUpload: imagem enviada, status da leitura, e associação ao usuário.
-- DadosImagem: resultado final, nota obtida e dados corrigidos.
+- `Perfil`: armazena informações adicionais dos usuários (foto, etc.).
+- `ImagemUpload`: imagem enviada, status da leitura, e associação ao usuário.
+- `DadosImagem`: resultado final, nota obtida e dados corrigidos.
 
 ### views.py
-- iniciar_leitura: trata tanto o envio da imagem quanto a submissão da revisão.
-- galeria: exibe a lista de gabaritos enviados.
-- perfil: permite edição dos dados do usuário.
+- `iniciar_leitura`: trata tanto o envio da imagem quanto a submissão da revisão.
+- `galeria`: exibe a lista de gabaritos enviados.
+- `perfil`: permite edição dos dados do usuário.
 
 ### biblioteca.py
-- Define a estrutura Reading com ctypes.Structure
-- Carrega a biblioteca .so e realiza chamadas com tipos seguros
+- Define a estrutura `Reading` com `ctypes.Structure`.
+- Carrega a biblioteca `.so` e realiza chamadas com tipos seguros.
 
 ---
 
@@ -89,7 +89,7 @@ O sistema permite que os usuários cadastrem suas contas, enviem imagens dos gab
 
 ### Passos
 
-
+```bash
 git clone https://github.com/JamesMakarov/Leitor_Gabarito
 cd Leitor_Gabarito
 
@@ -101,16 +101,3 @@ docker-compose exec web python3 leitor_projeto/manage.py migrate
 
 # 4. Criar um superusuário (acesso ao admin)
 docker-compose exec web python3 leitor_projeto/manage.py createsuperuser
-
-
-A aplicação estará disponível em:
-
-**http://localhost:8000**
-
-Para desligar:
-
-Ctrl + C
-docker-compose down
-
-
----

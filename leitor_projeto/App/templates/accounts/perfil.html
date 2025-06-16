@@ -1,81 +1,105 @@
 {% extends "accounts/base.html" %}
 {% load form_filters %}
+{% load static %}
+{% load base64_filters %}
 
 {% block title %}Meu Perfil{% endblock %}
 
 {% block content %}
-<div class="container">
-  <h2 class="mb-4">Meu Perfil</h2>
+<div class="container py-5">
+  <div class="row justify-content-center">
+    <div class="col-lg-8">
 
-  {% if messages %}
-    <div class="alert alert-info">
-      {% for message in messages %}
-        <p>{{ message }}</p>
-      {% endfor %}
-    </div>
-  {% endif %}
+      <div class="card bg-dark text-light border-0 shadow-lg rounded-4">
+        <div class="card-body p-5">
 
-  {% if mostrar_formulario %}
-    <form method="post" enctype="multipart/form-data" class="row g-3">
-      {% csrf_token %}
+          <h2 class="mb-4 text-center fw-bold border-bottom pb-3">Meu Perfil</h2>
 
-      <div class="col-md-6">
-        <label class="form-label">Nome completo</label>
-        {{ form.nome_completo|add_class:"form-control" }}
-      </div>
-
-      <div class="col-md-6">
-        <label class="form-label">Data de nascimento</label>
-        {{ form.nascimento|add_class:"form-control" }}
-      </div>
-
-      <div class="col-12">
-        <label class="form-label">Bio</label>
-        {{ form.bio|add_class:"form-control" }}
-      </div>
-
-      <div class="col-12">
-        <label class="form-label">Foto de perfil</label>
-        {{ form.foto_arquivo }}
-      </div>
-
-      <div class="col-12">
-        <button type="submit" class="btn btn-primary">Salvar</button>
-      </div>
-
-      {% if form.errors %}
-        <div class="alert alert-danger mt-3">
-          {% for field in form %}
-            {% for error in field.errors %}
-              <p><strong>{{ field.label }}:</strong> {{ error }}</p>
-            {% endfor %}
-          {% endfor %}
-        </div>
-      {% endif %}
-    </form>
-
-  {% else %}
-    <div class="card shadow-sm">
-      <div class="card-body text-center">
-
-        {% if perfil.foto %}
-          <img src="{% url 'imagem_perfil' perfil.user.id %}"
-               class="rounded-circle img-thumbnail mb-3"
-               style="width: 150px; height: 150px; object-fit: cover;"
-               alt="Foto de perfil">
-        {% endif %}
-
-        <p><strong>Nome completo:</strong> {{ perfil.nome_completo|default:"Não informado" }}</p>
-        <p><strong>Bio:</strong> {{ perfil.bio|default:"Não informada" }}</p>
-        <p><strong>Data de nascimento:</strong>
-          {% if perfil.nascimento %}
-            {{ perfil.nascimento|date:"d/m/Y" }}
-          {% else %}
-            Não informado
+          {% if messages %}
+            <div class="alert alert-info">
+              {% for message in messages %}
+                <p class="mb-0">{{ message }}</p>
+              {% endfor %}
+            </div>
           {% endif %}
-        </p>
+
+          <!-- Avatar sempre visível -->
+          <div class="text-center mb-4">
+            {% if perfil.foto %}
+              <img src="data:image/jpeg;base64,{{ perfil.foto|b64encode }}"
+                   class="rounded-circle border border-3 mb-3"
+                   style="width: 200px; height: 200px; object-fit: cover;"
+                   alt="Foto de perfil">
+            {% else %}
+              <i class="bi bi-person-circle" style="font-size: 200px; color: #777;"></i>
+            {% endif %}
+          </div>
+
+          {% if mostrar_formulario %}
+            <form method="post" enctype="multipart/form-data" class="row g-4">
+              {% csrf_token %}
+
+              <div class="col-md-6">
+                <label class="form-label">Nome completo</label>
+                {{ form.nome_completo|add_class:"form-control bg-secondary text-white border-0" }}
+              </div>
+
+              <div class="col-md-6">
+                <label class="form-label">Data de nascimento</label>
+                {{ form.nascimento|add_class:"form-control bg-secondary text-white border-0" }}
+              </div>
+
+              <div class="col-12">
+                <label class="form-label">Bio</label>
+                {{ form.bio|add_class:"form-control bg-secondary text-white border-0" }}
+              </div>
+
+              <div class="col-12">
+                <label class="form-label">Foto de perfil</label>
+                <input type="file" id="inputFoto" accept="image/*" class="form-control bg-secondary text-white border-0">
+
+                <div class="text-center mt-4">
+                  <img id="cropperImagem" class="rounded shadow border" style="max-width: 100%; max-height: 300px; display: none;" />
+                </div>
+
+                <!-- Campo oculto que receberá a imagem cropada -->
+                <input type="hidden" name="foto_cropada" id="fotoCropada">
+              </div>
+
+              <div class="col-12 text-end">
+                <button type="submit" class="btn btn-primary px-4">Salvar</button>
+              </div>
+
+              {% if form.errors %}
+                <div class="alert alert-danger mt-3">
+                  {% for field in form %}
+                    {% for error in field.errors %}
+                      <p><strong>{{ field.label }}:</strong> {{ error }}</p>
+                    {% endfor %}
+                  {% endfor %}
+                </div>
+              {% endif %}
+
+              <script src="{% static '/scripts/perfil_imagem.js' %}"></script>
+            </form>
+
+            <script src="{% static '/scripts/ver_imagem.js' %}"></script>
+
+          {% else %}
+            <p class="fs-5"><strong>Nome completo:</strong> {{ perfil.nome_completo|default:"Não informado" }}</p>
+            <p class="fs-5"><strong>Bio:</strong> {{ perfil.bio|default:"Não informada" }}</p>
+            <p class="fs-5"><strong>Data de nascimento:</strong>
+              {% if perfil.nascimento %}
+                {{ perfil.nascimento|date:"d/m/Y" }}
+              {% else %}
+                Não informado
+              {% endif %}
+            </p>
+          {% endif %}
+        </div>
       </div>
+
     </div>
-  {% endif %}
+  </div>
 </div>
 {% endblock %}

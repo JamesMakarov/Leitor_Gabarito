@@ -10,6 +10,13 @@ class Perfil(models.Model):
     nascimento = models.DateField(blank=True, null=True)
     foto = models.BinaryField(blank=True, null=True)
 
+    @property
+    def foto_base64(self):
+        if self.foto:
+            import base64
+            return base64.b64encode(self.foto).decode('utf-8')
+        return None
+
 
 class ImagemUpload(models.Model):
     usuario = models.ForeignKey(User, on_delete=models.CASCADE)

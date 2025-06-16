@@ -21,9 +21,10 @@ from .utils import GABARITOS, calcular_pontuacao
 from django.conf import settings
 from django import template
 import base64
+from django.core.files.base import ContentFile
 
 def redirecionar_para_login(request):
-    return redirect('login')  # ou use o nome da URL do login se for diferente
+    return redirect('login')
 
 
 @login_required
@@ -182,12 +183,19 @@ def imagem_perfil(request, user_id):
     except Perfil.DoesNotExist:
         raise Http404("Perfil não encontrado")
 
+
 @login_required
 def perfil_view(request):
     perfil = request.user.perfil
 
     if request.method == 'POST':
         form = PerfilForm(request.POST, request.FILES, instance=perfil)
+
+        foto_cropada = request.POST.get('foto_cropada')
+        if foto_cropada and foto_cropada.startswith('data:image'):
+            format, imgstr = foto_cropada.split(';base64,')
+            perfil.foto = base64.b64decode(imgstr)
+
         if form.is_valid():
             form.save()
             return redirect('perfil')
@@ -197,9 +205,13 @@ def perfil_view(request):
     context = {
         'form': form,
         'perfil': perfil,
-        'mostrar_formulario': True
+        'mostrar_formulario': True,
+        'foto_base64': perfil.foto,
     }
     return render(request, 'accounts/perfil.html', context)
+
+
+
 
 
 @login_required
@@ -227,7 +239,12 @@ def editar_dado(request, dado_id):
     dado = get_object_or_404(DadosImagem, pk=dado_id, usuario=request.user)
 
     if request.method == 'POST':
-        form = RevisaoGabaritoForm(request.POST)
+        # Reconstrói a leitura com base nas respostas enviadas no POST
+        leitura_str = ''.join([request.POST.get(f'questao_{i+1}', '') for i in range(20)])
+        
+        # Repassa a leitura para o form, para manter os campos marcados
+        form = RevisaoGabaritoForm(request.POST, leitura=leitura_str)
+
         if form.is_valid():
             respostas = []
             for i in range(20):
@@ -259,6 +276,7 @@ def editar_dado(request, dado_id):
         )
 
     return render(request, 'editar_dado.html', {'form': form, 'dado': dado})
+
 
 
 @login_required

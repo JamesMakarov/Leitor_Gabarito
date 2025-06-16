@@ -1,33 +1,37 @@
 {% extends "accounts/base.html" %}
 {% load form_filters %}
 {% block title %}Revisar respostas e informações{% endblock %}
+
 {% block content %}
-<div class="container">
-  <h2 class="mb-4">Revisar respostas e informações</h2>
+<div class="container py-5">
+  <h2 class="mb-5 text-center text-white fw-bold border-bottom pb-3">Revisar respostas e informações</h2>
 
   <form method="post" class="row g-4">
     {% csrf_token %}
 
     <!-- Campos fixos -->
     <div class="col-md-6">
-      <label class="form-label">{{ form.id_prova.label }}</label>
-      {{ form.id_prova|add_class:"form-control" }}
+      <label class="form-label text-white">{{ form.id_prova.label }}</label>
+      {{ form.id_prova|add_class:"form-control bg-secondary text-white border-0" }}
     </div>
     <div class="col-md-6">
-      <label class="form-label">{{ form.id_participante.label }}</label>
-      {{ form.id_participante|add_class:"form-control" }}
+      <label class="form-label text-white">{{ form.id_participante.label }}</label>
+      {{ form.id_participante|add_class:"form-control bg-secondary text-white border-0" }}
     </div>
 
-    <hr class="my-4">
-    <h5>Respostas:</h5>
+    <hr class="my-5 text-white">
 
-    <!-- Campos dinâmicos das questões -->
+    <h5 class="text-white">Respostas:</h5>
+
+    <!-- Campos dinâmicos em cartões -->
     {% for field in form %}
       {% if field.name != 'id_prova' and field.name != 'id_participante' %}
-        <div class="col-md-4">
-          <div class="form-group">
-            <label class="form-label">{{ field.label }}</label>
-            {{ field }}
+        <div class="col-md-6">
+          <div class="card bg-dark text-white shadow border-0 rounded-4 mb-4">
+            <div class="card-body">
+              <label class="form-label fw-bold">{{ field.label }}</label>
+              {{ field }}
+            </div>
           </div>
         </div>
       {% endif %}
@@ -35,8 +39,8 @@
 
     <input type="hidden" name="imagem_id" value="{{ imagem_id }}">
 
-    <div class="col-12 mt-4">
-      <button type="submit" class="btn btn-success">✅ Confirmar e Salvar</button>
+    <div class="col-12 text-end mt-4">
+      <button type="submit" class="btn btn-success px-4 py-2 rounded-3">✅ Confirmar e Salvar</button>
     </div>
   </form>
 </div>
